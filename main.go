@@ -5,14 +5,42 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"github.com/thisisfineio/variant"
+	"time"
+	"flag"
 )
 
 var (
 	sep = string(os.PathSeparator)
 	path string
+	gopath = os.Getenv("GOPATH")
+	org string
+	// inline versions for now, maybe future use build tool to code gen and read from json
+	cur = &variant.Version{
+		Major: 0,
+		Minor: 1,
+		Date: time.Unix(1482639633, 0),
+		ReleaseType: variant.Beta,
+		Description: "The initial beta releae of 'fetch', designed to make it easy for developers to grab all of thisisfine.io's code and start contributing.",
+	}
+
+	Versions = &variant.Versions{
+		Current: cur,
+		Versions: []*variant.Version{
+			cur,
+		},
+	}
+
+	v = flag.Bool("version", false, "Prints the current version of fetch")
 )
 
+func init(){
+	flag.StringVar(&path, "path", gopath + fmt.Sprintf("%ssrc%sgithub.com%sthisisfineio", sep, sep, sep), "Sets the path to download repos to")
+	flag.StringVar(&org, "org", "thisisfineio", "Sets the organization to clone from")
+}
+
 func main(){
+	parse()
 	err := clone()
 	if err != nil {
 		fmt.Println(err)
@@ -22,14 +50,9 @@ func main(){
 
 func clone() error {
 	client := github.NewClient(nil)
-	publicRepos, _, err := client.Repositories.ListByOrg("thisisfineio", nil)
+	publicRepos, _, err := client.Repositories.ListByOrg(org, nil)
 	if err != nil {
 		return err
-	}
-	gopath := os.Getenv("GOPATH")
-
-	if path == "" {
-		path = gopath + fmt.Sprintf("%ssrc%sgithub.com%sthisisfineio/test", sep, sep, sep)
 	}
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -59,4 +82,16 @@ func clone() error {
 		}
 	}
 	return nil
+}
+
+func parse() {
+	flag.Parse()
+	if *v {
+		version()
+	}
+}
+
+func version() {
+	fmt.Println("fetch version:", cur.VersionString())
+	os.Exit(0)
 }
