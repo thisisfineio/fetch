@@ -8,6 +8,7 @@ import (
 	"github.com/thisisfineio/variant"
 	"time"
 	"flag"
+	"strings"
 )
 
 var (
@@ -26,7 +27,7 @@ var (
 
 	Versions = &variant.Versions{
 		Current: cur,
-		Versions: []*variant.Version{
+		History: []*variant.Version{
 			cur,
 		},
 	}
@@ -75,10 +76,13 @@ func clone() error {
 		o, err := cmd.Output()
 		if err != nil {
 			if e, ok := err.(*exec.ExitError); ok {
+				if strings.Contains(string(e.Stderr), "already exists and is not an empty directory.", ) {
+					continue
+				}
 				fmt.Println(string(e.Stderr))
+			} else {
+				fmt.Print(string(o))
 			}
-		} else {
-			fmt.Print(string(o))
 		}
 	}
 	return nil
