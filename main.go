@@ -76,7 +76,7 @@ func clone() error {
 		o, err := cmd.Output()
 		if err != nil {
 			if e, ok := err.(*exec.ExitError); ok {
-				if strings.Contains(string(e.Stderr), "already exists and is not an empty directory.", ) {
+				if strings.Contains(string(e.Stderr), "already exists and is not an empty directory.") {
 					continue
 				}
 				fmt.Println(string(e.Stderr))
