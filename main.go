@@ -16,6 +16,7 @@ var (
 	path string
 	gopath = os.Getenv("GOPATH")
 	org string
+	update bool
 	// inline versions for now, maybe future use build tool to code gen and read from json
 	cur = &variant.Version{
 		Major: 0,
@@ -38,6 +39,7 @@ var (
 func init(){
 	flag.StringVar(&path, "path", gopath + fmt.Sprintf("%ssrc%sgithub.com%sthisisfineio", sep, sep, sep), "Sets the path to download repos to")
 	flag.StringVar(&org, "org", "thisisfineio", "Sets the organization to clone from")
+	flag.BoolVar(&update, "u", false, "Attempt to update existing repositories - will not stash changes, will fail if unstaged things exist")
 }
 
 func main(){
@@ -77,6 +79,7 @@ func clone() error {
 		if err != nil {
 			if e, ok := err.(*exec.ExitError); ok {
 				if strings.Contains(string(e.Stderr), "already exists and is not an empty directory.") {
+					// put git pull here
 					continue
 				}
 				fmt.Println(string(e.Stderr))
